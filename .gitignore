@@ -1,0 +1,86 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Jupyter Notebook
+.ipynb_checkpoints
+*.ipynb
+
+# Data files - IMPORTANT pour RGPD
+*.csv
+*.json
+*.txt
+*.parquet
+etape1-anonymisation/data/
+etape2-modele-ia/data/
+
+# Models - peuvent être lourds
+*.h5
+*.pkl
+*.joblib
+*.pt
+*.pth
+*.onnx
+etape2-modele-ia/models/*.h5
+etape2-modele-ia/models/*.pkl
+
+# Logs
+*.log
+logs/
+etape6-supervision/logs/
+
+# Environment variables - SECRETS
+.env
+.env.local
+*.key
+*.pem
+credentials.json
+secrets/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Cloud credentials
+.aws/
+.gcloud/
+*.tfstate
+*.tfstate.backup
+
+# Tests
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# Load testing results
+etape5-load-testing/results/*.html
+etape5-load-testing/results/*.log
