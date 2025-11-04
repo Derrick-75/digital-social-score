@@ -46,38 +46,84 @@ class DataAnonymizer:
         
         print("✅ Anonymiseur initialisé avec succès")
     
+    def chunk_by_words(self, text: str, max_chars: int = 1000) -> List[str]:
+        """Découpe le texte par mots sans casser les entités"""
+        if len(text) <= max_chars:
+            return [text]
+        
+        words = text.split()
+        chunks = []
+        current_chunk = []
+        current_length = 0
+        
+        for word in words:
+            word_length = len(word) + 1  # +1 pour l'espace
+            
+            # Si un seul mot dépasse la limite (URL très longue par exemple)
+            if word_length > max_chars:
+                # Finir le chunk actuel si nécessaire
+                if current_chunk:
+                    chunks.append(" ".join(current_chunk))
+                    current_chunk = []
+                    current_length = 0
+                
+                # Traiter le mot long par caractères en dernier recours
+                for i in range(0, len(word), max_chars):
+                    chunks.append(word[i:i+max_chars])
+                
+            elif current_length + word_length > max_chars and current_chunk:
+                # Finir le chunk actuel
+                chunks.append(" ".join(current_chunk))
+                current_chunk = [word]
+                current_length = word_length
+            else:
+                # Ajouter le mot au chunk actuel
+                current_chunk.append(word)
+                current_length += word_length
+        
+        # Ajouter le dernier chunk
+        if current_chunk:
+            chunks.append(" ".join(current_chunk))
+        
+        return chunks
+
     def anonymize_with_ner(self, text: str) -> Tuple[str, Dict]:
-        """Anonymise un texte en utilisant spaCy NER"""
+        """Anonymise un texte en utilisant spaCy NER avec chunking par mots"""
         if not isinstance(text, str) or len(text.strip()) == 0:
             return text, {}
         
         try:
-            # Limiter la longueur pour éviter les timeouts
-            if len(text) > 1000:
-                text = text[:1000] + "..."
+            # Utiliser chunking par mots pour les longs textes
+            chunks = self.chunk_by_words(text, max_chars=1000)
             
-            doc = self.nlp(text)
-            anonymized_text = text
-            entities_found = {}
+            anonymized_chunks = []
+            total_entities_found = {}
             
-            # Remplacer les entités par ordre décroissant de position
-            # pour éviter les problèmes d'index
-            entities = sorted(doc.ents, key=lambda x: x.start_char, reverse=True)
+            for chunk in chunks:
+                doc = self.nlp(chunk)
+                anonymized_chunk = chunk
+                
+                # Remplacer les entités par ordre décroissant de position
+                entities = sorted(doc.ents, key=lambda x: x.start_char, reverse=True)
+                
+                for ent in entities:
+                    if ent.label_ in self.sensitive_entities:
+                        replacement = self.replacements.get(ent.label_, f'[{ent.label_}]')
+                        anonymized_chunk = (
+                            anonymized_chunk[:ent.start_char] + 
+                            replacement + 
+                            anonymized_chunk[ent.end_char:]
+                        )
+                        
+                        if ent.label_ not in total_entities_found:
+                            total_entities_found[ent.label_] = 0
+                        total_entities_found[ent.label_] += 1
+                
+                anonymized_chunks.append(anonymized_chunk)
             
-            for ent in entities:
-                if ent.label_ in self.sensitive_entities:
-                    replacement = self.replacements.get(ent.label_, f'[{ent.label_}]')
-                    anonymized_text = (
-                        anonymized_text[:ent.start_char] + 
-                        replacement + 
-                        anonymized_text[ent.end_char:]
-                    )
-                    
-                    if ent.label_ not in entities_found:
-                        entities_found[ent.label_] = 0
-                    entities_found[ent.label_] += 1
-            
-            return anonymized_text, entities_found
+            # Recoller tous les chunks
+            final_text = " ".join(anonymized_chunks)
+            return final_text, total_entities_found
             
         except Exception as e:
             print(f"⚠️ Erreur NER: {str(e)[:50]}")
@@ -203,10 +249,13 @@ class DataAnonymizer:
         
         print(f"📊 Statistiques sauvegardées: {stats_path}")
 
-def main():
+def main(max_rows=None):
     """Fonction principale d'anonymisation"""
     print("🛡️ DIGITAL SOCIAL SCORE - ANONYMISATION RGPD")
     print("=" * 60)
+    
+    if max_rows:
+        print(f"🔢 MODE TEST: Limitation à {max_rows:,} lignes par fichier")
     
     # Chemins des fichiers
     current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -238,6 +287,12 @@ def main():
             df = pd.read_csv(input_path)
             print(f"📊 Chargé: {df.shape[0]} lignes, {df.shape[1]} colonnes")
             
+            # Limiter le nombre de lignes si spécifié
+            if max_rows is not None:
+                original_rows = len(df)
+                df = df.head(max_rows)
+                print(f"🔢 Dataset limité à {len(df)} lignes (sur {original_rows:,} au total)")
+            
             # Anonymiser
             df_anonymized, stats = anonymizer.anonymize_dataframe(df)
             
@@ -259,4 +314,8 @@ def main():
     print(f"🛡️ Données conformes RGPD - Anonymisation irréversible")
 
 if __name__ == "__main__":
+    # Pour tester avec 20 000 lignes, décommentez la ligne suivante:
+    # main(max_rows=20000)
+    
+    # Pour traiter tout le dataset:
     main()
