@@ -1,0 +1,174 @@
+{
+  "info": {
+    "name": "Digital Social Score API",
+    "description": "Collection de tests pour l'API de détection de toxicité",
+    "version": "1.0.0",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/health",
+          "host": ["{{base_url}}"],
+          "path": ["health"]
+        },
+        "description": "Vérification de l'état de santé de l'API"
+      },
+      "response": []
+    },
+    {
+      "name": "Analyze Text - Safe",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"text\": \"Hello, how are you today? This is a nice message.\",\n  \"model\": \"bert\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/analyze",
+          "host": ["{{base_url}}"],
+          "path": ["analyze"]
+        },
+        "description": "Test avec un texte non-toxique"
+      },
+      "response": []
+    },
+    {
+      "name": "Analyze Text - Toxic",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"text\": \"You are such an idiot and I hate you! Go kill yourself!\",\n  \"model\": \"bert\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/analyze",
+          "host": ["{{base_url}}"],
+          "path": ["analyze"]
+        },
+        "description": "Test avec un texte toxique"
+      },
+      "response": []
+    },
+    {
+      "name": "Analyze Text - Simple Model",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"text\": \"This is a test message for the simple model.\",\n  \"model\": \"simple\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/analyze",
+          "host": ["{{base_url}}"],
+          "path": ["analyze"]
+        },
+        "description": "Test avec le modèle simple (TF-IDF)"
+      },
+      "response": []
+    },
+    {
+      "name": "Get Statistics",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/stats",
+          "host": ["{{base_url}}"],
+          "path": ["stats"]
+        },
+        "description": "Récupération des statistiques d'utilisation"
+      },
+      "response": []
+    },
+    {
+      "name": "Get Model Info",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/models/info",
+          "host": ["{{base_url}}"],
+          "path": ["models", "info"]
+        },
+        "description": "Informations sur les modèles disponibles"
+      },
+      "response": []
+    },
+    {
+      "name": "Error Test - Empty Text",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"text\": \"\",\n  \"model\": \"bert\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/analyze",
+          "host": ["{{base_url}}"],
+          "path": ["analyze"]
+        },
+        "description": "Test de validation - texte vide (doit retourner 422)"
+      },
+      "response": []
+    },
+    {
+      "name": "Error Test - Invalid Model",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"text\": \"Test message\",\n  \"model\": \"invalid_model\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/analyze",
+          "host": ["{{base_url}}"],
+          "path": ["analyze"]
+        },
+        "description": "Test de validation - modèle invalide (doit retourner 422)"
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000",
+      "description": "URL de base de l'API"
+    }
+  ]
+}

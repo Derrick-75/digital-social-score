@@ -38,6 +38,7 @@ try {
     Write-Host "✅ Docker installé" -ForegroundColor Green
 } catch {
     Write-Host "❌ Docker non trouvé. Installez Docker Desktop" -ForegroundColor Red
+ 
     exit 1
 }
 

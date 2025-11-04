@@ -23,9 +23,32 @@ wheels/
 .installed.cfg
 *.egg
 
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.cache
+
 # Jupyter Notebook
 .ipynb_checkpoints
-*.ipynb
+# *.ipynb - Commenté pour permettre les notebooks de tracking
+
+# Data files - IMPORTANT pour RGPD
+*.csv
+*.json
+*.txt
+*.parquet
+etape1-anonymisation/data/
+etape2-modele-ia/data/
+
+# EXCEPTION: Autoriser certains fichiers de config essentiels
+!etape3-api/postman_collection.json
+!etape3-api/requirements.txt
+!etape4-securite/requirements.txt
+!k8s/*.yaml
+!k8s/*.md
+!docs/*.md
 
 # Data files - IMPORTANT pour RGPD
 *.csv
@@ -42,8 +65,17 @@ etape2-modele-ia/data/
 *.pt
 *.pth
 *.onnx
+*.safetensors
+*.bin
 etape2-modele-ia/models/*.h5
 etape2-modele-ia/models/*.pkl
+
+# BERT Models - très lourds (>100MB)
+etape2-modele-ia/models/bert_model/
+etape2-modele-ia/models/bert_model/*.safetensors
+etape2-modele-ia/models/bert_model/*.bin
+etape2-modele-ia/models/bert_model/model.safetensors
+etape2-modele-ia/models/bert_model/pytorch_model.bin
 
 # Logs
 *.log
