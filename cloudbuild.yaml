@@ -10,12 +10,12 @@ steps:
     id: 'run-tests'
     entrypoint: 'bash'
     args:
-      - '-c'
-      - |
+      - '-c'      - |
         echo "🧪 Installation des dépendances de test..."
-        pip install -q pytest requests fastapi
+        pip install -q pytest pytest-cov requests fastapi
         pip install -q -r etape3-api/requirements.txt
-          echo "🧪 Lancement des tests unitaires..."
+        
+        echo "🧪 Lancement des tests unitaires..."
         cd etape3-api
         export PYTHONPATH=/workspace/etape3-api:$$PYTHONPATH
         pytest tests/test_api.py -v || exit 1
