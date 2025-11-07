@@ -5,12 +5,12 @@
 steps:
   # ========================================
   # ÉTAPE 1 : Tests Unitaires
-  # ========================================
-  - name: 'python:3.10-slim'
+  # ========================================  - name: 'python:3.10-slim'
     id: 'run-tests'
     entrypoint: 'bash'
     args:
-      - '-c'      - |
+      - '-c'
+      - |
         echo "🧪 Installation des dépendances de test..."
         pip install -q pytest pytest-cov requests fastapi
         pip install -q -r etape3-api/requirements.txt
