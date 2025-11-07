@@ -18,7 +18,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copier le code de l'application
 COPY app/ ./app/
-COPY start_server.py .
+# ❌ SUPPRIMÉ: COPY start_server.py .
 
 # Créer un utilisateur non-root pour la sécurité
 RUN adduser --disabled-password --gecos '' appuser && \
@@ -31,9 +31,11 @@ EXPOSE 8000
 # Variables d'environnement
 ENV PYTHONPATH=/app
 ENV LOG_LEVEL=INFO
+ENV HOST=0.0.0.0
+ENV PORT=8000
 
-# Commande de démarrage
-CMD ["python", "start_server.py"]
+# ✅ CHANGÉ: Commande de démarrage avec uvicorn directement
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
 
 # Métadonnées
 LABEL maintainer="ESIGELEC - Digital Social Score Team"

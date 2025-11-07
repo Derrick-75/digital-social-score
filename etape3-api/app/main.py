@@ -297,7 +297,7 @@ async def global_exception_handler(request: Request, exc: Exception):
         content=ErrorResponse(
             error="Internal Server Error",
             message="Une erreur inattendue s'est produite"
-        ).dict()
+        ).model_dump(mode='json')
     )
 
 @app.exception_handler(HTTPException)
@@ -308,7 +308,7 @@ async def http_exception_handler(request: Request, exc: HTTPException):
         content=ErrorResponse(
             error=f"HTTP {exc.status_code}",
             message=exc.detail
-        ).dict()
+        ).model_dump(mode='json')
     )
 
 if __name__ == "__main__":

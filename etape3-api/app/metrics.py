@@ -56,10 +56,19 @@ def setup_metrics(app):
         from app.metrics import setup_metrics
         setup_metrics(app)
     """
+    from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
+    from fastapi import Response
+    
     # Ajouter l'instrumentation automatique
     instrumentator.instrument(app)
     
-    # Exposer l'endpoint /metrics
-    instrumentator.expose(app, endpoint="/metrics", include_in_schema=False)
+    # Exposer l'endpoint /metrics manuellement
+    @app.get("/metrics", include_in_schema=False)
+    async def metrics():
+        """Endpoint Prometheus pour exporter les métriques"""
+        return Response(
+            content=generate_latest(),
+            media_type=CONTENT_TYPE_LATEST
+        )
     
     return app

@@ -2,7 +2,7 @@
 # Prérequis : gcp-setup.ps1 exécuté avec succès
 
 param(
-    [string]$ProjectId = "",
+    [string]$ProjectId = "digitalsocialscoreapi",
     [string]$ImageTag = "latest",
     [string]$Domain = "",
     [switch]$UseLoadBalancer = $false

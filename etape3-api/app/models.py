@@ -16,7 +16,7 @@ class AnalyzeRequest(BaseModel):
         description="Texte à analyser pour la toxicité"
     )
     model: Optional[str] = Field(
-        "bert", 
+        "simple", 
         description="Modèle à utiliser: 'bert' ou 'simple'",
         pattern="^(bert|simple)$"
     )

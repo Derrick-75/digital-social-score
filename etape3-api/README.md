@@ -1,5 +1,64 @@
 # Étape 3 : Déploiement du Modèle en API Cloud
 
+## 🌐 DÉPLOIEMENT EN PRODUCTION
+
+**✅ API déployée et accessible publiquement**
+
+- **URL Production** : http://34.38.214.124
+- **Documentation interactive** : http://34.38.214.124/docs
+- **Plateforme** : Google Cloud Platform (GCP)
+- **Région** : Probablement europe-west1
+- **Date de déploiement** : Novembre 2025
+- **Status** : 🟢 Opérationnel
+
+### 🔗 Endpoints Disponibles
+
+| Endpoint | Méthode | Description |
+|----------|---------|-------------|
+| `/` | GET | Informations API |
+| `/health` | GET | Health check |
+| `/analyze` | POST | Analyse de toxicité |
+| `/docs` | GET | Documentation Swagger |
+| `/redoc` | GET | Documentation ReDoc |
+
+### 📝 Exemples de Requêtes
+
+#### Health Check
+```bash
+curl http://34.38.214.124/health
+```
+
+#### Analyse de Toxicité
+```bash
+curl -X POST "http://34.38.214.124/analyze" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "text": "This is a test comment",
+    "model": "simple"
+  }'
+```
+
+#### Réponse attendue
+```json
+{
+  "score": 15,
+  "toxicity_level": "low",
+  "categories": {
+    "toxic": 0.15,
+    "severe_toxic": 0.02,
+    "obscene": 0.08,
+    "threat": 0.01,
+    "insult": 0.12,
+    "identity_hate": 0.03
+  },
+  "processing_time_ms": 45.2,
+  "model_used": "simple",
+  "timestamp": "2025-11-07T10:30:00Z"
+}
+```
+
+---
+
 ## 🎯 Objectifs Pédagogiques
 
 - Transformer le modèle IA en service accessible

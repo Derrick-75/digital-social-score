@@ -2,7 +2,7 @@
 # Prérequis : gcloud CLI installé et configuré
 
 param(
-    [string]$ProjectId = "",
+    [string]$ProjectId = "digitalsocialscoreapi",
     [string]$ClusterName = "dss-cluster",
     [string]$Zone = "europe-west1-b",
     [string]$NodeCount = "2"
@@ -131,8 +131,11 @@ if ($LASTEXITCODE -ne 0) {
     Write-Host "Installation du metrics server pour l'autoscaling..." -ForegroundColor Blue
     kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
     
-    # Patch pour GKE (résolution de noms)
-    kubectl patch deployment metrics-server -n kube-system --type='json' -p='[{"op": "add", "path": "/spec/template/spec/containers/0/args/-", "value": "--kubelet-insecure-tls"}]'
+    # Patch pour GKE (résolution de noms) - utiliser une approche simplifiée
+    $patchJson = @"
+[{"op": "add", "path": "/spec/template/spec/containers/0/args/-", "value": "--kubelet-insecure-tls"}]
+"@
+    kubectl patch deployment metrics-server -n kube-system --type=json -p $patchJson
     
     Write-Host "✅ Metrics server installé" -ForegroundColor Green
 } else {

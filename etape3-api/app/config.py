@@ -33,7 +33,7 @@ API_VERSION = "1.0.0"
 
 # Paramètres de l'IA
 MAX_TEXT_LENGTH = 5000
-DEFAULT_MODEL = "bert"  # "bert" ou "simple"
+DEFAULT_MODEL = "simple"  # "bert" ou "simple" - simple est plus rapide et léger
 INFERENCE_TIMEOUT = 30  # secondes
 
 # Rate limiting (requêtes par minute)

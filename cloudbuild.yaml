@@ -1,0 +1,154 @@
+# Cloud Build Configuration - Digital Social Score API
+# Ce fichier définit le pipeline CI/CD automatique
+# Déclenché à chaque push sur GitHub
+
+steps:
+  # ========================================
+  # ÉTAPE 1 : Tests Unitaires
+  # ========================================
+  - name: 'python:3.10-slim'
+    id: 'run-tests'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        echo "🧪 Installation des dépendances de test..."
+        pip install -q pytest requests
+        pip install -q -r etape3-api/requirements.txt
+        
+        echo "🧪 Lancement des tests unitaires..."
+        pytest etape3-api/tests/test_api.py -v || exit 1
+        
+        echo "✅ Tests réussis!"
+
+  # ========================================
+  # ÉTAPE 2 : Build de l'image Docker
+  # ========================================
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'build-image'
+    args:
+      - 'build'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/dss-api:$SHORT_SHA'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/dss-api:latest'
+      - '-f'
+      - 'etape3-api/Dockerfile'
+      - 'etape3-api/'
+    waitFor: ['run-tests']
+
+  # ========================================
+  # ÉTAPE 3 : Push de l'image vers GCR
+  # ========================================
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'push-image'
+    args:
+      - 'push'
+      - 'gcr.io/$PROJECT_ID/dss-api:$SHORT_SHA'
+    waitFor: ['build-image']
+
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'push-latest'
+    args:
+      - 'push'
+      - 'gcr.io/$PROJECT_ID/dss-api:latest'
+    waitFor: ['build-image']
+
+  # ========================================
+  # ÉTAPE 4 : Déploiement sur GKE
+  # ========================================
+  - name: 'gcr.io/cloud-builders/kubectl'
+    id: 'deploy-to-gke'
+    args:
+      - 'set'
+      - 'image'
+      - 'deployment/dss-api'
+      - 'dss-api=gcr.io/$PROJECT_ID/dss-api:$SHORT_SHA'
+      - '--namespace=dss'
+    env:
+      - 'CLOUDSDK_COMPUTE_REGION=europe-west1'
+      - 'CLOUDSDK_CONTAINER_CLUSTER=dss-cluster'
+    waitFor: ['push-image', 'push-latest']
+
+  # ========================================
+  # ÉTAPE 5 : Vérification du déploiement
+  # ========================================
+  - name: 'gcr.io/cloud-builders/kubectl'
+    id: 'verify-deployment'
+    args:
+      - 'rollout'
+      - 'status'
+      - 'deployment/dss-api'
+      - '--namespace=dss'
+      - '--timeout=5m'
+    env:
+      - 'CLOUDSDK_COMPUTE_REGION=europe-west1'
+      - 'CLOUDSDK_CONTAINER_CLUSTER=dss-cluster'
+    waitFor: ['deploy-to-gke']
+
+  # ========================================
+  # ÉTAPE 6 : Tests post-déploiement (Smoke Tests)
+  # ========================================
+  - name: 'curlimages/curl:latest'
+    id: 'smoke-tests'
+    entrypoint: 'sh'
+    args:
+      - '-c'
+      - |
+        echo "🔥 Tests de fumée (smoke tests)..."
+        
+        # Attendre que le service soit prêt
+        sleep 30
+        
+        # Test 1: Health check
+        echo "Test 1/3: Health check..."
+        curl -f http://34.38.214.124/health || exit 1
+        
+        # Test 2: Metrics endpoint
+        echo "Test 2/3: Metrics endpoint..."
+        curl -f http://34.38.214.124/metrics || exit 1
+        
+        # Test 3: Analyse de texte
+        echo "Test 3/3: Analyse de toxicité..."
+        curl -f -X POST http://34.38.214.124/analyze \
+          -H "Content-Type: application/json" \
+          -d '{"text": "This is a test message", "model": "simple"}' || exit 1
+        
+        echo "✅ Tous les smoke tests ont réussi!"
+    waitFor: ['verify-deployment']
+
+# ========================================
+# OPTIONS DE BUILD
+# ========================================
+options:
+  # Utiliser une machine plus puissante pour accélérer le build
+  machineType: 'N1_HIGHCPU_8'
+  
+  # Logging amélioré
+  logging: CLOUD_LOGGING_ONLY
+  
+  # Timeout global
+  timeout: '1200s'  # 20 minutes max
+
+# ========================================
+# IMAGES À STOCKER
+# ========================================
+images:
+  - 'gcr.io/$PROJECT_ID/dss-api:$SHORT_SHA'
+  - 'gcr.io/$PROJECT_ID/dss-api:latest'
+
+# ========================================
+# SUBSTITUTIONS (Variables)
+# ========================================
+substitutions:
+  _CLUSTER_NAME: 'dss-cluster'
+  _CLUSTER_ZONE: 'europe-west1'
+  _NAMESPACE: 'dss'
+
+# ========================================
+# ARTIFACTS (optionnel - pour sauvegarder les logs)
+# ========================================
+artifacts:
+  objects:
+    location: 'gs://${PROJECT_ID}_cloudbuild/logs'
+    paths: ['*.log']

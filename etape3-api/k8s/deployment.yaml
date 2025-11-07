@@ -19,8 +19,8 @@ spec:
     spec:
       containers:
       - name: dss-api
-        image: digital-social-score-api:latest
-        imagePullPolicy: IfNotPresent
+        image: gcr.io/digitalsocialscoreapi/digital-social-score-api:latest  # ✅ CHANGÉ: Image complète GCR
+        imagePullPolicy: Always  # ✅ CHANGÉ: Always au lieu de IfNotPresent
         ports:
         - containerPort: 8000
           name: http
@@ -30,7 +30,7 @@ spec:
         - name: PORT
           value: "8000"
         - name: LOG_LEVEL
-          value: "info"
+          value: "INFO"
         - name: ENVIRONMENT
           value: "production"
         resources:
@@ -56,6 +56,16 @@ spec:
           periodSeconds: 5
           timeoutSeconds: 3
           failureThreshold: 3
+        # ✅ AJOUTÉ: Security context requis pour Autopilot
+        securityContext:
+          allowPrivilegeEscalation: false
+          runAsNonRoot: true
+          runAsUser: 1000
+          capabilities:
+            drop:
+            - ALL
+          seccompProfile:
+            type: RuntimeDefault
         volumeMounts:
         - name: tmp-storage
           mountPath: /tmp
