@@ -22,8 +22,27 @@ from .models import (
 )
 from .inference import predictor
 
-# Configuration du logging
-logging.basicConfig(level=LOG_LEVEL, format=LOG_FORMAT)
+# ✅ Import des métriques Prometheus (pour monitoring avancé)
+try:
+    from .metrics import setup_metrics, toxicity_requests, toxicity_score, toxicity_processing_time
+    METRICS_ENABLED = True
+except ImportError:
+    METRICS_ENABLED = False
+    # Le logger sera défini plus bas
+
+# ✅ CORRECTION: Configuration du logging sécurisée
+try:
+    # Convertir le niveau de log en niveau logging approprié
+    if isinstance(LOG_LEVEL, str):
+        log_level = getattr(logging, LOG_LEVEL.upper(), logging.INFO)
+    else:
+        log_level = LOG_LEVEL
+    
+    logging.basicConfig(level=log_level, format=LOG_FORMAT)
+except (AttributeError, ValueError):
+    # Fallback en cas d'erreur
+    logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
+
 logger = logging.getLogger(__name__)
 
 # Variables globales pour les statistiques
@@ -73,6 +92,13 @@ app = FastAPI(
     docs_url="/docs",
     redoc_url="/redoc"
 )
+
+# ✅ ACTIVATION PROMETHEUS - Métriques disponibles sur /metrics
+if METRICS_ENABLED:
+    setup_metrics(app)
+    logger.info("📊 Métriques Prometheus activées sur /metrics")
+else:
+    logger.warning("⚠️ Métriques Prometheus désactivées (module non trouvé)")
 
 # Configuration CORS
 app.add_middleware(
@@ -191,16 +217,34 @@ async def analyze_toxicity(
     
     Analyse un texte et retourne un score de toxicité de 0 à 100.
     
-    - **text**: Le texte à analyser (max 5000 caractères)
-    - **model**: Modèle à utiliser ("bert" ou "simple")
+    - **text**: Le texte à analyser (max 5000 caractères)    - **model**: Modèle à utiliser ("bert" ou "simple")
     
     **Note RGPD**: Aucune donnée n'est stockée ou logged.
     """
     try:
         logger.info(f"Analyse demandée avec modèle: {request.model}")
         
+        # Timer pour Prometheus
+        start_time = time.time()
+        
         # Effectuer la prédiction
         result = predictor.predict(request.text, request.model)
+        
+        # ✅ Enregistrer les métriques Prometheus
+        if METRICS_ENABLED:
+            # Compter la requête
+            toxicity_requests.labels(
+                model_type=result["model_used"],
+                status="success"
+            ).inc()
+            
+            # Enregistrer le score
+            toxicity_score.observe(result["score"])
+            
+            # Enregistrer le temps de traitement
+            toxicity_processing_time.labels(
+                model_type=result["model_used"]
+            ).observe(result["processing_time_ms"] / 1000)  # Convertir ms en secondes
         
         # Créer la réponse
         response = AnalyzeResponse(
@@ -225,12 +269,21 @@ async def analyze_toxicity(
         return response
         
     except ValueError as e:
+        # ✅ Enregistrer l'erreur dans Prometheus
+        if METRICS_ENABLED:
+            toxicity_requests.labels(model_type=request.model, status="validation_error").inc()
         logger.warning(f"Erreur de validation: {e}")
         raise HTTPException(status_code=422, detail=str(e))
     except RuntimeError as e:
+        # ✅ Enregistrer l'erreur dans Prometheus
+        if METRICS_ENABLED:
+            toxicity_requests.labels(model_type=request.model, status="model_error").inc()
         logger.error(f"Erreur modèle: {e}")
         raise HTTPException(status_code=503, detail="Modèle temporairement indisponible")
     except Exception as e:
+        # ✅ Enregistrer l'erreur dans Prometheus
+        if METRICS_ENABLED:
+            toxicity_requests.labels(model_type=request.model, status="server_error").inc()
         logger.error(f"Erreur inattendue lors de l'analyse: {e}")
         raise HTTPException(status_code=500, detail="Erreur interne du serveur")
 
@@ -259,10 +312,16 @@ async def http_exception_handler(request: Request, exc: HTTPException):
     )
 
 if __name__ == "__main__":
+    # ✅ CORRECTION: Gestion sécurisée du log level pour uvicorn
+    try:
+        uvicorn_log_level = LOG_LEVEL.lower() if isinstance(LOG_LEVEL, str) else "info"
+    except:
+        uvicorn_log_level = "info"
+        
     uvicorn.run(
         "app.main:app",
         host="0.0.0.0",
         port=8080,
         reload=True,
-        log_level=LOG_LEVEL.lower()
+        log_level=uvicorn_log_level
     )
