@@ -126,9 +126,9 @@ options:
   
   # Logging amélioré
   logging: CLOUD_LOGGING_ONLY
-  
-  # Timeout global
-  timeout: '1200s'  # 20 minutes max
+
+# Timeout global (doit être au niveau racine, pas dans options)
+timeout: '1200s'  # 20 minutes max
 
 # ========================================
 # IMAGES À STOCKER
