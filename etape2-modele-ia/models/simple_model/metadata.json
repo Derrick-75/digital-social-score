@@ -1,0 +1,17 @@
+{
+  "model_name": "Logistic Regression",
+  "model_type": "simple_tfidf",
+  "f1_score": 0.7149220489977728,
+  "accuracy": 0.936,
+  "auc_roc": 0.9507686760615212,
+  "train_time": 0.10830831527709961,
+  "inference_time_per_text_ms": 0.0,
+  "vocabulary_size": 10000,
+  "training_samples": 16000,
+  "validation_samples": 4000,
+  "created_at": "2025-11-04T14:37:04.167106",
+  "criteria_met": {
+    "f1_above_075": false,
+    "inference_below_500ms": true
+  }
+}

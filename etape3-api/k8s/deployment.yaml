@@ -1,0 +1,75 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dss-api-deployment
+  namespace: digital-social-score
+  labels:
+    app: dss-api
+    version: v1
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: dss-api
+  template:
+    metadata:
+      labels:
+        app: dss-api
+        version: v1
+    spec:
+      containers:
+      - name: dss-api
+        image: gcr.io/digitalsocialscoreapi/digital-social-score-api:latest  # ✅ CHANGÉ: Image complète GCR
+        imagePullPolicy: Always  # ✅ CHANGÉ: Always au lieu de IfNotPresent
+        ports:
+        - containerPort: 8000
+          name: http
+        env:
+        - name: HOST
+          value: "0.0.0.0"
+        - name: PORT
+          value: "8000"
+        - name: LOG_LEVEL
+          value: "INFO"
+        - name: ENVIRONMENT
+          value: "production"
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+        # ✅ AJOUTÉ: Security context requis pour Autopilot
+        securityContext:
+          allowPrivilegeEscalation: false
+          runAsNonRoot: true
+          runAsUser: 1000
+          capabilities:
+            drop:
+            - ALL
+          seccompProfile:
+            type: RuntimeDefault
+        volumeMounts:
+        - name: tmp-storage
+          mountPath: /tmp
+      volumes:
+      - name: tmp-storage
+        emptyDir: {}
+      restartPolicy: Always

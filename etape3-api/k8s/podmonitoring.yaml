@@ -1,0 +1,17 @@
+apiVersion: monitoring.googleapis.com/v1
+kind: PodMonitoring
+metadata:
+  name: dss-api-prometheus
+  namespace: digital-social-score
+  labels:
+    app: dss-api
+    monitoring: prometheus
+spec:
+  selector:
+    matchLabels:
+      app: dss-api
+  endpoints:
+  - port: 8000
+    interval: 30s
+    path: /metrics
+    scheme: http

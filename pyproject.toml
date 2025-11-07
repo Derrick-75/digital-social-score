@@ -1,0 +1,272 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "digital-social-score"
+version = "1.0.0"
+description = "API de détection de toxicité dans les textes - Projet ESIGELEC"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [
+    {name = "ESIGELEC Digital Social Score Team", email = "contact@esigelec.fr"},
+]
+keywords = ["nlp", "toxicity", "ai", "api", "fastapi", "bert", "machine-learning", "rgpd"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Education",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Text Processing :: Linguistic",
+    "Topic :: Internet :: WWW/HTTP :: HTTP Servers",
+]
+requires-python = ">=3.9"
+dependencies = [
+    # Core data science
+    "pandas>=2.0.3,<3.0.0",
+    "numpy>=1.24.3,<2.0.0",
+    # Machine Learning - Core
+    "scikit-learn>=1.3.2,<2.0.0",
+    # Machine Learning - Deep Learning
+    "torch>=2.1.1,<3.0.0",
+    "transformers>=4.35.2,<5.0.0",
+    "tokenizers>=0.15.0,<1.0.0",
+    # NLP and Text Processing
+    "spacy>=3.7.0,<4.0.0",
+    "nltk>=3.8.1,<4.0.0",
+    # spaCy English model (large)
+    "en-core-web-lg @ https://github.com/explosion/spacy-models/releases/download/en_core_web_lg-3.7.1/en_core_web_lg-3.7.1-py3-none-any.whl",
+    # Data Visualization (pour notebooks)
+    "matplotlib>=3.7.0,<4.0.0",
+    "seaborn>=0.12.0,<1.0.0",
+    # Progress bars
+    "tqdm>=4.65.0,<5.0.0",
+    # API Framework
+    "fastapi>=0.104.1,<1.0.0",
+    "uvicorn[standard]>=0.24.0,<1.0.0",
+    "pydantic>=2.5.0,<3.0.0",
+    # API Utilities
+    "python-multipart>=0.0.6,<1.0.0",
+    "python-dotenv>=1.0.0,<2.0.0",
+    # Security and Authentication
+    "python-jose[cryptography]>=3.3.0,<4.0.0",
+    "passlib[bcrypt]>=1.7.4,<2.0.0",
+    "cryptography>=41.0.0,<42.0.0",
+    # Monitoring and Logging
+    "structlog>=23.2.0,<24.0.0",
+    # Model serialization
+    "joblib>=1.3.0,<2.0.0",
+    # Jupyter notebooks support
+    "ipywidgets>=8.0.0,<9.0.0",
+    "jupyter>=1.0.0,<2.0.0",
+]
+
+[project.optional-dependencies]
+# Développement et tests
+dev = [
+    "pytest>=7.4.3,<8.0.0",
+    "pytest-cov>=4.1.0,<5.0.0",
+    "pytest-asyncio>=0.21.0,<1.0.0",
+    "httpx>=0.25.2,<1.0.0",
+    "black>=23.0.0,<24.0.0",
+    "isort>=5.12.0,<6.0.0",
+    "flake8>=6.0.0,<7.0.0",
+    "mypy>=1.5.0,<2.0.0",
+    "pre-commit>=3.4.0,<4.0.0",
+]
+
+# Tests de charge
+load-testing = [
+    "locust>=2.17.0,<3.0.0",
+    "k6>=0.1.0,<1.0.0",
+]
+
+# Monitoring avancé
+monitoring = [
+    "prometheus-client>=0.17.0,<1.0.0",
+    "grafana-api>=1.0.3,<2.0.0",
+]
+
+# Cloud deployment
+cloud = [
+    "docker>=6.1.0,<7.0.0",
+    "boto3>=1.29.0,<2.0.0",  # AWS
+    "google-cloud-storage>=2.10.0,<3.0.0",  # GCP
+]
+
+# All dependencies
+all = [
+    "digital-social-score[dev,load-testing,monitoring,cloud]",
+]
+
+[project.urls]
+Homepage = "https://github.com/esigelec/digital-social-score"
+Documentation = "https://github.com/esigelec/digital-social-score/blob/main/README.md"
+Repository = "https://github.com/esigelec/digital-social-score"
+"Bug Tracker" = "https://github.com/esigelec/digital-social-score/issues"
+
+[project.scripts]
+# Scripts CLI pour le projet
+anonymize-data = "etape1_anonymisation.scripts.anonymize:main"
+train-model = "etape2_modele_ia.quick_train_model:main"
+start-api = "etape3_api.app.main:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["etape*", "docs"]
+exclude = ["tests*", "*.tests*"]
+
+[tool.setuptools.package-data]
+"etape2_modele_ia" = ["models/**/*"]
+"docs" = ["*.md"]
+
+# Configuration des outils de développement
+
+[tool.black]
+line-length = 100
+target-version = ['py39', 'py310', 'py311']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # Exclure les dossiers générés
+  \.git
+  | \.tox
+  | \.venv
+  | _build
+  | build
+  | dist
+  | data
+)/
+'''
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+line_length = 100
+known_first_party = ["etape1_anonymisation", "etape2_modele_ia", "etape3_api"]
+skip_glob = ["data/*", "models/*"]
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = "-ra -q --strict-markers --cov=etape3_api --cov-report=term-missing --cov-report=html"
+testpaths = [
+    "etape3-api/tests",
+    "tests",
+]
+python_files = [
+    "test_*.py",
+    "*_test.py",
+]
+python_classes = [
+    "Test*",
+]
+python_functions = [
+    "test_*",
+]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+    "unit: marks tests as unit tests",
+    "api: marks tests as API tests",
+]
+filterwarnings = [
+    "ignore::UserWarning",
+    "ignore::DeprecationWarning",
+]
+
+[tool.coverage.run]
+source = ["etape3_api"]
+omit = [
+    "*/tests/*",
+    "*/test_*",
+    "*/__pycache__/*",
+    "*/venv/*",
+    "*/env/*",
+    "*/data/*",
+    "*/models/*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+]
+
+[tool.mypy]
+python_version = "3.9"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+
+[[tool.mypy.overrides]]
+module = [
+    "spacy.*",
+    "nltk.*",
+    "sklearn.*",
+    "matplotlib.*",
+    "seaborn.*",
+    "transformers.*",
+    "torch.*",
+    "pandas.*",
+    "numpy.*",
+]
+ignore_missing_imports = true
+
+[tool.flake8]
+max-line-length = 100
+extend-ignore = [
+    "E203",  # whitespace before ':'
+    "E501",  # line too long (handled by black)
+    "W503",  # line break before binary operator
+]
+exclude = [
+    ".git",
+    "__pycache__",
+    "build",
+    "dist",
+    ".venv",
+    "venv",
+    "data",
+    "models",
+]
+per-file-ignores = [
+    "__init__.py:F401",  # unused imports in __init__.py
+    "test_*.py:F401,F811",  # test files can have unused imports
+]
+
+# Configuration spécifique pour FastAPI
+[tool.fastapi]
+generate_schemas = true
+docs_url = "/docs"
+redoc_url = "/redoc"
+
+# Variables d'environnement pour le développement
+[tool.dotenv]
+files = [
+    ".env",
+    ".env.local",
+    ".env.development",
+]

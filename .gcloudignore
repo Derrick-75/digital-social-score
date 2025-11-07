@@ -1,0 +1,87 @@
+# Fichiers et dossiers à ignorer lors du build Cloud Build
+# Cela accélère l'upload du contexte de build
+
+# Git
+.git/
+.gitignore
+.github/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Environnements virtuels
+venv/
+env/
+ENV/
+.venv
+
+# Jupyter Notebooks (pas nécessaires pour le build)
+*.ipynb
+.ipynb_checkpoints/
+
+# Documentation (pas nécessaire pour le build)
+docs/
+*.md
+*.pdf
+*.docx
+
+# Données d'entraînement (volumineuses et pas nécessaires)
+etape1-anonymisation/data/
+etape2-modele-ia/data/
+etape2-modele-ia/models/
+
+# Tests de charge (pas nécessaires pour le build)
+etape5-load-testing/
+*.html
+*.csv
+
+# Fichiers de configuration IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Scripts PowerShell (pas nécessaires dans le build)
+*.ps1
+verify_cloud_build_setup.ps1
+
+# Fichiers temporaires
+*.tmp
+*.bak
+*.lock
+uv.lock
+
+# Fichiers de projet non essentiels
+project_status_tracking.ipynb
+Makefile
+pyproject.toml
+INSTALL.md
+
+# Résultats de tests
+test_*.html
+test_*.csv
+results_*/
+
+# Grilles d'évaluation
+Grille_*.pdf
+Grille_*.docx
