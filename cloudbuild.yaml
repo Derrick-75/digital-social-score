@@ -5,19 +5,20 @@
 steps:
   # ========================================
   # ÉTAPE 1 : Tests Unitaires
-  # ========================================
-  - name: 'python:3.10-slim'
+  # ========================================  - name: 'python:3.10-slim'
     id: 'run-tests'
     entrypoint: 'bash'
     args:
       - '-c'
       - |
         echo "🧪 Installation des dépendances de test..."
-        pip install -q pytest requests
+        pip install -q pytest requests fastapi
         pip install -q -r etape3-api/requirements.txt
         
         echo "🧪 Lancement des tests unitaires..."
-        pytest etape3-api/tests/test_api.py -v || exit 1
+        cd etape3-api
+        export PYTHONPATH=/workspace/etape3-api:$PYTHONPATH
+        pytest tests/test_api.py -v || exit 1
         
         echo "✅ Tests réussis!"
 
