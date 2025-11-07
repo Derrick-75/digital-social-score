@@ -121,8 +121,8 @@ steps:
 # OPTIONS DE BUILD
 # ========================================
 options:
-  # Utiliser une machine plus puissante pour accélérer le build
-  machineType: 'N1_HIGHCPU_8'
+  # Utiliser une machine E2 (nouvelle génération)
+  machineType: 'E2_HIGHCPU_8'
   
   # Logging amélioré
   logging: CLOUD_LOGGING_ONLY
