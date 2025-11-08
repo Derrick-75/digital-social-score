@@ -143,14 +143,8 @@ images:
 # SUBSTITUTIONS (Variables)
 # ========================================
 substitutions:
-  _CLUSTER_NAME: 'dss-cluster'
+  _CLUSTER_NAME: 'dss-cluster-autopilot'
   _CLUSTER_ZONE: 'europe-west1'
-  _NAMESPACE: 'dss'
+  _NAMESPACE: 'digital-social-score'
 
-# ========================================
-# ARTIFACTS (optionnel - pour sauvegarder les logs)
-# ========================================
-artifacts:
-  objects:
-    location: 'gs://${PROJECT_ID}_cloudbuild/logs'
-    paths: ['*.log']
+# Note: Section artifacts supprimée car non nécessaire pour ce pipeline
