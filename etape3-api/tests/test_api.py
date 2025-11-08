@@ -56,12 +56,12 @@ def test_analyze_too_long_text():
 
 def test_model_info_endpoint():
     """Test de l'endpoint d'informations du modèle"""
-    response = client.get("/model/info")
+    response = client.get("/models/info")  # Correction: /models/info au lieu de /model/info
     assert response.status_code in [200, 503]  # 503 si modèle pas chargé
 
-def test_test_endpoint():
-    """Test de l'endpoint de test"""
-    response = client.get("/test")
+def test_stats_endpoint():
+    """Test de l'endpoint de statistiques"""
+    response = client.get("/stats")
     assert response.status_code == 200
     data = response.json()
-    assert "message" in data
+    assert "total_requests" in data
