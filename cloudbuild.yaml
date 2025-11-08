@@ -64,9 +64,9 @@ steps:
     args:
       - 'set'
       - 'image'
-      - 'deployment/dss-api'
+      - 'deployment/dss-api-deployment'
       - 'dss-api=gcr.io/$PROJECT_ID/dss-api:$SHORT_SHA'
-      - '--namespace=dss'
+      - '--namespace=digital-social-score'
     env:
       - 'CLOUDSDK_COMPUTE_REGION=europe-west1'
       - 'CLOUDSDK_CONTAINER_CLUSTER=dss-cluster-autopilot'
@@ -80,8 +80,8 @@ steps:
     args:
       - 'rollout'
       - 'status'
-      - 'deployment/dss-api'
-      - '--namespace=dss'
+      - 'deployment/dss-api-deployment'
+      - '--namespace=digital-social-score'
       - '--timeout=5m'
     env:
       - 'CLOUDSDK_COMPUTE_REGION=europe-west1'
