@@ -82,7 +82,7 @@ steps:
       - 'status'
       - 'deployment/dss-api-deployment'
       - '--namespace=digital-social-score'
-      - '--timeout=5m'
+      - '--timeout=10m'  # Augmenté à 10 minutes
     env:
       - 'CLOUDSDK_COMPUTE_REGION=europe-west1'
       - 'CLOUDSDK_CONTAINER_CLUSTER=dss-cluster-autopilot'
