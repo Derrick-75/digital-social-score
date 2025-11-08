@@ -69,7 +69,7 @@ steps:
       - '--namespace=dss'
     env:
       - 'CLOUDSDK_COMPUTE_REGION=europe-west1'
-      - 'CLOUDSDK_CONTAINER_CLUSTER=dss-cluster'
+      - 'CLOUDSDK_CONTAINER_CLUSTER=dss-cluster-autopilot'
     waitFor: ['push-image', 'push-latest']
 
   # ========================================
@@ -85,7 +85,7 @@ steps:
       - '--timeout=5m'
     env:
       - 'CLOUDSDK_COMPUTE_REGION=europe-west1'
-      - 'CLOUDSDK_CONTAINER_CLUSTER=dss-cluster'
+      - 'CLOUDSDK_CONTAINER_CLUSTER=dss-cluster-autopilot'
     waitFor: ['deploy-to-gke']
 
   # ========================================
