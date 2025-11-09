@@ -56,9 +56,8 @@ def ml_pipeline(
     
     # Étape 3: Évaluation et décision de déploiement
     evaluate_task = evaluate_and_decide_op(
-        model_uri=train_task.outputs['model_output'],
         test_data_gcs_path=test_data_gcs_path,
-        metrics=train_task.outputs['metrics']
+        new_model=train_task.outputs['model_output']
     )
 
 if __name__ == "__main__":
