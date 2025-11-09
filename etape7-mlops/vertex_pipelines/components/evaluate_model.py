@@ -17,17 +17,21 @@ from typing import NamedTuple
     ]
 )
 def evaluate_and_decide_op(
-    test_data: Input[Dataset],
+    test_data_gcs_path: str,  # Chemin GCS vers les données de test
     new_model: Input[Model],
-    current_model_f1: float,  # F1-Score du modèle actuel en production
     metrics: Output[Metrics],
+    current_model_f1: float = 0.5,  # F1-Score du modèle actuel en production
     improvement_threshold: float = 0.02  # Amélioration minimale de 2%
 ) -> NamedTuple('Outputs', [('should_deploy', bool), ('new_f1_score', float)]):
     """
     Évalue le nouveau modèle et décide s'il doit remplacer l'ancien
     
     Args:
-        test_data: Dataset de test
+        test_data_gcs_path: Chemin GCS vers les données de test
+        new_model: Nouveau modèle entraîné
+        current_model_f1: F1-Score du modèle actuellement en production
+        metrics: Métriques d'évaluation
+        improvement_threshold: Amélioration minimale requise pour déployer
         new_model: Nouveau modèle entraîné
         current_model_f1: F1-Score du modèle actuellement en production
         metrics: Métriques d'évaluation
@@ -47,15 +51,29 @@ def evaluate_and_decide_op(
         confusion_matrix,
         classification_report
     )
+    from google.cloud import storage
     import json
     
     print("📊 Évaluation du nouveau modèle...")
     
-    # Charger les données de test
-    test_path = test_data.path + '.csv'
-    df = pd.read_csv(test_path)
+    # Charger les données de test depuis GCS
+    print(f"📥 Chargement des données de test depuis {test_data_gcs_path}...")
+    client = storage.Client()
+    bucket_name = test_data_gcs_path.split('/')[2]
+    blob_path = '/'.join(test_data_gcs_path.split('/')[3:])
     
-    test_texts = df['text_anonymized'].tolist()
+    bucket = client.bucket(bucket_name)
+    blob = bucket.blob(blob_path)
+    blob.download_to_filename('/tmp/test_data.csv')
+    
+    df = pd.read_csv('/tmp/test_data.csv')
+    
+    # Utiliser comment_text au lieu de text_anonymized si pas encore anonymisé
+    if 'text_anonymized' in df.columns:
+        test_texts = df['text_anonymized'].tolist()
+    else:
+        test_texts = df['comment_text'].tolist()
+    
     test_labels = df['toxic'].tolist()
     
     print(f"🧪 Dataset de test: {len(test_texts)} échantillons")

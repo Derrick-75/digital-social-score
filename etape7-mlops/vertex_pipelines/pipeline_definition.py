@@ -8,9 +8,9 @@ from kfp.v2.dsl import pipeline
 from google.cloud import aiplatform
 
 # Import des composants
-from components.prepare_data import prepare_data_op
-from components.train_model import train_model_op
-from components.evaluate_model import evaluate_and_decide_op
+from .components.prepare_data import prepare_data_op
+from .components.train_model import train_model_op
+from .components.evaluate_model import evaluate_and_decide_op
 
 
 @pipeline(
@@ -56,7 +56,7 @@ def ml_pipeline(
     # ÉTAPE 1 : Préparation des données
     # ========================================
     prepare_data_task = prepare_data_op(
-        raw_data_path=raw_data_gcs_path
+        raw_data_gcs_path=raw_data_gcs_path
     )
     prepare_data_task.set_display_name("📋 Préparation des données")
     prepare_data_task.set_cpu_limit('2')
@@ -66,28 +66,25 @@ def ml_pipeline(
     # ÉTAPE 2 : Entraînement du modèle
     # ========================================
     train_model_task = train_model_op(
-        input_dataset=prepare_data_task.outputs['output_dataset'],
-        model_type=model_type,
+        training_data=prepare_data_task.outputs['anonymized_data'],
         epochs=epochs,
         batch_size=batch_size,
         learning_rate=learning_rate
     )
-    train_model_task.set_display_name(f"🤖 Entraînement modèle {model_type.upper()}")
+    train_model_task.set_display_name("🤖 Entraînement modèle")
     train_model_task.set_cpu_limit('4')
     train_model_task.set_memory_limit('8G')
     
-    # Si BERT, ajouter GPU (optionnel)
-    if model_type.lower() == "bert":
-        train_model_task.set_gpu_limit(1)
-        train_model_task.add_node_selector_constraint('cloud.google.com/gke-accelerator', 'nvidia-tesla-t4')
+    # Note: Le modèle type est BERT (codé en dur dans le composant)
     
     # ========================================
     # ÉTAPE 3 : Évaluation du modèle
     # ========================================
     evaluate_model_task = evaluate_and_decide_op(
-        test_dataset=test_data_gcs_path,
-        trained_model=train_model_task.outputs['output_model'],
-        min_f1_threshold=min_f1_threshold
+        test_data_gcs_path=test_data_gcs_path,
+        new_model=train_model_task.outputs['model_output'],
+        current_model_f1=0.5,  # F1-Score baseline (à ajuster selon votre modèle actuel)
+        improvement_threshold=0.02
     )
     evaluate_model_task.set_display_name("📊 Évaluation du modèle")
     evaluate_model_task.set_cpu_limit('2')
@@ -158,8 +155,8 @@ def ml_pipeline(
             print(f"✅ Modèle déployé avec succès vers gs://{destination_bucket}/{model_path}")
         
         deploy_task = deploy_model_component(
-            trained_model=train_model_task.outputs['output_model'],
-            f1_score=evaluate_model_task.outputs['f1_score'],
+            trained_model=train_model_task.outputs['model_output'],
+            f1_score=evaluate_model_task.outputs['new_f1_score'],
             project_id=project_id
         )
         deploy_task.set_display_name("🚀 Déploiement du modèle")
