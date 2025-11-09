@@ -35,15 +35,16 @@ def prepare_data_op(
     import spacy
     import hashlib
     import re
+    import os
     from google.cloud import storage
     
-    print("🔍 Chargement du modèle spaCy pour NER...")
-    # Télécharger et charger spaCy
-    import os
+    print("Chargement du modele spaCy pour NER...")
+    # Telecharger et charger spaCy
     os.system("python -m spacy download en_core_web_sm")
     nlp = spacy.load("en_core_web_sm")
+    print(f"Modele charge: {nlp.meta['name']}")
     
-    print(f"📥 Chargement des données depuis {raw_data_gcs_path}...")
+    print(f"Chargement des donnees depuis {raw_data_gcs_path}...")
     
     # Charger les données depuis GCS
     client = storage.Client()
@@ -53,21 +54,21 @@ def prepare_data_op(
     bucket = client.bucket(bucket_name)
     blob = bucket.blob(blob_path)
     
-    # Télécharger dans un fichier temporaire
+    # Telecharger dans un fichier temporaire
     blob.download_to_filename('/tmp/raw_data.csv')
     df = pd.read_csv('/tmp/raw_data.csv')
     
-    print(f"✅ Chargé {len(df)} lignes de données")
+    print(f"Charge {len(df)} lignes de donnees")
     
     def anonymize_text(text):
-        """Anonymise les entités nommées dans le texte"""
+        """Anonymise les entites nommees dans le texte"""
         if pd.isna(text):
             return text
             
         doc = nlp(str(text))
         anonymized = text
         
-        # Remplacer les entités par des hash
+        # Remplacer les entites par des hash
         for ent in reversed(doc.ents):
             if ent.label_ in ['PERSON', 'ORG', 'GPE', 'LOC']:
                 hash_val = hashlib.sha256(ent.text.encode()).hexdigest()[:8]
@@ -79,7 +80,7 @@ def prepare_data_op(
         
         return anonymized
     
-    print("🔐 Anonymisation des textes...")
+    print("Anonymisation des textes...")
     df['text_anonymized'] = df['comment_text'].apply(anonymize_text)
     
     # Nettoyage basique
@@ -90,21 +91,21 @@ def prepare_data_op(
     num_samples = len(df)
     num_toxic = df['toxic'].sum() if 'toxic' in df.columns else 0
     
-    print(f"📊 Statistiques:")
-    print(f"   - Total échantillons: {num_samples}")
-    print(f"   - Échantillons toxiques: {num_toxic}")
-    print(f"   - Taux de toxicité: {num_toxic/num_samples*100:.2f}%")
+    print(f"Statistiques:")
+    print(f"   - Total echantillons: {num_samples}")
+    print(f"   - Echantillons toxiques: {num_toxic}")
+    print(f"   - Taux de toxicite: {num_toxic/num_samples*100:.2f}%")
     
-    # Sauvegarder les données anonymisées
+    # Sauvegarder les donnees anonymisees
     output_path = anonymized_data.path + '.csv'
     df.to_csv(output_path, index=False)
     
-    # Logger les métriques
+    # Logger les metriques
     metrics.log_metric('num_samples', num_samples)
     metrics.log_metric('num_toxic', num_toxic)
     metrics.log_metric('toxicity_rate', num_toxic/num_samples)
     
-    print(f"✅ Données anonymisées sauvegardées: {output_path}")
+    print(f"Donnees anonymisees sauvegardees: {output_path}")
     
     from collections import namedtuple
     output = namedtuple('Outputs', ['num_samples', 'num_toxic'])
