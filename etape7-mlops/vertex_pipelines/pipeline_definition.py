@@ -16,7 +16,7 @@ from components.evaluate_model import evaluate_and_decide_op
 @pipeline(
     name="digital-social-score-ml-pipeline",
     description="Pipeline MLOps pour entraîner et déployer le modèle de détection de toxicité",
-    pipeline_root="gs://digitalsocialscoreapi_cloudbuild/vertex-pipelines"
+    pipeline_root="gs://digitalsocialscoreapi-mlops/vertex-pipelines"
 )
 def ml_pipeline(
     # Paramètres du pipeline
