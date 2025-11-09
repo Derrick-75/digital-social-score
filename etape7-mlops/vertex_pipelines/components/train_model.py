@@ -3,7 +3,7 @@ Composant Vertex AI : Entraînement du modèle BERT
 Ce composant entraîne un modèle BERT pour la détection de toxicité
 """
 
-from kfp.v2.dsl import component, Input, Output, Dataset, Model, Metrics
+from kfp.dsl import component, Input, Output, Dataset, Model, Metrics
 
 
 @component(

@@ -3,7 +3,7 @@ Composant Vertex AI : Évaluation du modèle et décision de déploiement
 Compare le nouveau modèle avec le modèle actuel en production
 """
 
-from kfp.v2.dsl import component, Input, Output, Model, Dataset, Metrics
+from kfp.dsl import component, Input, Output, Model, Dataset, Metrics
 from typing import NamedTuple
 
 

@@ -3,7 +3,7 @@ Composant Vertex AI : Préparation et anonymisation des données
 Ce composant charge, nettoie et anonymise les données pour l'entraînement
 """
 
-from kfp.v2.dsl import component, Output, Dataset, Metrics
+from kfp.dsl import component, Output, Dataset, Metrics
 from typing import NamedTuple
 
 
